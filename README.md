@@ -1,13 +1,13 @@
 # Modeling Levelized Cost of Charging & Levelized Cost of Battery Swapping
 
 ## Project Description
-This research project aim to model the levelized cost of charging (LCOC) and levelized cost of battery swapping (LCOBS) for electric vehicles. By simulating the charging and battery swapping processes, we calculate the associated costs and provide insights into the economic aspects of these operations.
+This research project aim to model the levelized cost of charging (LCOC) and levelized cost of battery swapping (LCOBS) for electric vehicles base on [Borlaug et al. (2020)](https://www.sciencedirect.com/science/article/pii/S2542435120302312),[Lanz et al. (2022)](https://www.nature.com/articles/s41467-022-32835-7), [liang et al. (2022)](https://www.sciencedirect.com/science/article/abs/pii/S0360544220319903). By simulating the charging and battery swapping processes, we calculate the associated costs and provide insights into the economic aspects of these operations.
 
 Our research result (Also a DEMO for code using): [LCOC_LCOBS_analysis.ipynb](https://github.com/NTU-E3group/unname-4/blob/main/LCOC_LCOBS_analysis.ipynb) 
 
 ### What is Levelized Cost of Charging (LCOC)?
 
-The levelized cost of charging (LCOC) is a concept introduced by Borlaug et al. (2020), refers the total cost of owning and operating an electric vehicle (EV) charging station or infrastructure, expressed as a constant cost per kilowatt-hour (kWh) of electricity delivered. LCOC takes into account the variations in EV recharging and usage patterns, distributing all upfront and operating costs over the total energy supplied throughout the EVSE's (Electric Vehicle Supply Equipment) lifespan.
+The levelized cost of charging (LCOC) is a concept introduced by [Borlaug et al. (2020)](https://www.sciencedirect.com/science/article/pii/S2542435120302312), refers the total cost of owning and operating an electric vehicle (EV) charging station or infrastructure, expressed as a constant cost per kilowatt-hour (kWh) of electricity delivered. LCOC takes into account the variations in EV recharging and usage patterns, distributing all upfront and operating costs over the total energy supplied throughout the EVSE's (Electric Vehicle Supply Equipment) lifespan.
 
 ### What is Levelized Cost of Battery Swapping (LCOBS)?
 
@@ -66,33 +66,33 @@ Follow these steps to utilize our model:
     lcoc_calculator = LCOC_province_calculator(province_short_name,c_purchase,c_install, om_factor,c_r_electiricitr_evse_eff, r_tfs, dr, n, r_charging_mix, A_vkt, FE,L1,L2,w_workday,w_evse_eff,w_daily_output,c_w_electiricity,c_p_purchase,p_install_factor,p_om_factor,p_tfs,p_evese_eff,p_electiricity,p_charging_mix,p_daily_output,p_workday,combined_charging_mix,province_vkt,province_res_electiricity,province_work_electiricity,province_pub_electiricity,province_weight)
     ```
     Parameter Descriptions:
-    - `short_name`: Identifier for the charging station or infrastructure.
-    - `c_r_purchase`: Capital cost for residential charger purchase.
-    - `c_r_install`: Installation cost for residential charger.
+    - `short_name`: Identifier for the provinces' abbreviation.
+    - `c_r_purchase`: Capital cost for residential evse purchase.
+    - `c_r_install`: Installation cost for residential evse.
     - `om_factor`: Operating and maintenance cost factor.
     - `c_s_r_electiricity`: Cost of electricity for residential charging.
     - `r_evse_eff`: Efficiency of residential EVSE (Electric Vehicle Supply Equipment).
-    - `r_tfs`: Transmission and distribution losses for residential charging.
-    - `dr`: Discount rate for financial analysis.
+    - `r_tfs`: Transaction cost.
+    - `dr`: Discount rate.
     - `n`: Number of years for the cost analysis.
-    - `r_charging_mix`: Proportion of residential charging in overall mix.
+    - `r_charging_mix`: Proportion of residential charging mix.
     - `A_vkt`: Average Vehicle Kilometers Traveled.
     - `FE`: Fuel Efficiency of the vehicles.
-    - `l1`, `l2`: Weighting factors for residential charging costs.
+    - `l1`, `l2`: Weighting factors for residential charging mix.
     - `w_workday`: Number of workdays for workplace charging calculation.
     - `w_evse_eff`: Efficiency of workplace EVSE.
     - `w_daily_output`: Daily energy output for workplace charging.
     - `c_s_w_electiricity`: Cost of electricity for workplace charging.
-    - `c_p_purchase`: Capital cost for public charger purchase.
+    - `c_p_purchase`: Capital cost for public EVSE purchase.
     - `p_install_factor`: Installation factor for public chargers.
-    - `p_om_factor`: Operating and maintenance factor for public chargers.
-    - `p_tfs`: Transmission and distribution losses for public charging.
+    - `p_om_factor`: Operating and maintenance factor for public EVSE.
+    - `p_tfs`: Transaction cost of public charging.
     - `p_evse_eff`: Efficiency of public EVSE.
     - `c_s_p_electiricity`: Cost of electricity for public charging.
-    - `p_charging_mix`: Proportion of public charging in overall mix.
+    - `p_charging_mix`: Proportion of public charging mix.
     - `p_daily_output`: Daily energy output for public charging.
     - `p_workday`: Number of workdays for public charging calculation.
-    - `combined_charging_mix`: Combined charging mix for sensitivity analysis.
+    - `combined_charging_mix`: Combined charging mix
 
 
 2. **Calculate LCOC:**
@@ -108,11 +108,11 @@ Follow these steps to utilize our model:
     1. `cal_LCOC(sum_of_om, dis_energy, c_capital, c_electricity, evse_eff, tfs)`
         Calculates the Levelized Cost of Charging (LCOC).
         - `sum_of_om`: Sum of operating and maintenance costs.
-        - `dis_energy`: Discounted total energy output.
+        - `dis_energy`: Total discounted energy output.
         - `c_capital`: Capital costs.
         - `c_electricity`: Cost of electricity.
         - `evse_eff`: Efficiency of the EVSE.
-        - `tfs`: Transmission and distribution losses.
+        - `tfs`: transaction cost.
 
 
     2. `cal_sum_om(c_capital, om_factor)`
