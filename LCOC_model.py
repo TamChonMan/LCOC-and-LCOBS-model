@@ -1,12 +1,13 @@
+#Author Tam Chon-Man
+
 import numpy as np
 import pandas as pd
 
+#Single LCOC calculator
 class LCOCCalculator:
     def __init__(self,short_name, c_r_purchase , c_r_install , om_factor, c_s_r_electiricity, r_evse_eff, r_tfs, dr, n, 
                  r_charging_mix, A_vkt, FE, l1, l2, w_workday,w_evse_eff,w_daily_output,c_s_w_electiricity,c_p_purchase,p_install_factor,
-                 p_om_factor,p_tfs,p_evse_eff,c_s_p_electiricity,p_charging_mix,p_daily_output,p_workday,combined_charging_mix,province_A_vkt,
-                 c_r_electiricity,c_w_electiricity,c_p_electiricity,province_weight):
-       
+                 p_om_factor,p_tfs,p_evse_eff,c_s_p_electiricity,p_charging_mix,p_daily_output,p_workday,combined_charging_mix):
         
         #Combined
         self.combined_charging_mix = combined_charging_mix #sensitivity
@@ -42,20 +43,7 @@ class LCOCCalculator:
         self.p_daily_output = p_daily_output 
         self.p_workday = p_workday
 
-        #province 
-        self.province_shortname = short_name
-        self.province_c_r_electiricity = c_r_electiricity #array
-        self.province_A_vkt = province_A_vkt #array
-        self.province_c_w_electiricity = c_w_electiricity #array
-        self.province_c_p_electiricity = c_p_electiricity #array
-        self.province_weight = province_weight
 
-        # self.df_province_data = province_data
-        self.province_result = pd.DataFrame()
-
-        #Excute
-        self.province_lcoc()
-        
     #Model
     def cal_LCOC(self, sum_of_om, dis_enegry, c_capital,c_electiricity,evse_eff, tfs):
         return (((c_capital + sum_of_om) / dis_enegry + c_electiricity / evse_eff) * (1 + tfs))
@@ -113,29 +101,7 @@ class LCOCCalculator:
     def cal_combined_LCOC(self):
         c_lcoc = np.array([self.cal_r_weight_LCOC(),self.cal_w_LCOC(),self.cal_p_LCOC()])
         return np.dot(c_lcoc,self.combined_charging_mix)
-
-    # #Province
-    def province_lcoc(self):
-        result = pd.DataFrame([])
-        for i in range(len(self.province_shortname)):
-            self.setup_provnice_data(self.province_c_r_electiricity[i], self.province_A_vkt[i], self.province_c_w_electiricity[i])
-            new_row = pd.DataFrame([[self.province_shortname.loc[i][0], self.cal_r_weight_LCOC(), self.cal_w_LCOC(), self.cal_p_LCOC(),self.cal_combined_LCOC()]],
-                                    columns=['Province', 'Res', 'Workplace', 'Public','Combined'])
-            result = pd.concat([result, new_row], ignore_index=True)
-        self.province_result = result
-        return result
     
-    def cal_national_w_lcoc(self):
-        result = self.province_result["Combined"].to_numpy()
-        return np.dot(self.province_weight,result)
-    
-    #setup
-    def setup_provnice_data(self,c_r_electiricity,A_vkt,c_w_electiricity):
-        self.c_r_electiricity = c_r_electiricity
-        self.A_vkt = A_vkt
-        self.c_w_electiricity = c_w_electiricity
-        self.c_p_electiricity = c_w_electiricity
-   
      # Sensitivity setup functions
     def setup_c_r_capital(self, c_r_purchase, c_r_install):
         self.c_r_capital = c_r_purchase + c_r_install
@@ -220,13 +186,60 @@ class LCOCCalculator:
         self.combined_charging_mix = combined_charging_mix
         self.province_lcoc()
         return self
+
+ #Povinces average LCOC   
+class LCOC_province_calculator(LCOCCalculator):
+    def __init__(self, short_name, c_r_purchase, c_r_install, om_factor, c_s_r_electiricity, r_evse_eff, 
+                 r_tfs, dr, n, r_charging_mix, A_vkt, FE, l1, l2, w_workday, w_evse_eff, w_daily_output, 
+                 c_s_w_electiricity, c_p_purchase, p_install_factor, p_om_factor, p_tfs, p_evse_eff, c_s_p_electiricity, 
+                 p_charging_mix, p_daily_output, p_workday, combined_charging_mix,province_A_vkt,
+                 c_r_electiricity,c_w_electiricity,c_p_electiricity,province_weight):
+        super().__init__(short_name, c_r_purchase, c_r_install, om_factor, c_s_r_electiricity, r_evse_eff,
+                        r_tfs, dr, n, r_charging_mix, A_vkt, FE, l1, l2, w_workday, w_evse_eff, w_daily_output,
+                        c_s_w_electiricity, c_p_purchase, p_install_factor, p_om_factor, p_tfs, p_evse_eff, 
+                        c_s_p_electiricity, p_charging_mix, p_daily_output, p_workday, combined_charging_mix)
+        
+        #province 
+        self.province_shortname = short_name
+        self.province_c_r_electiricity = c_r_electiricity #array
+        self.province_A_vkt = province_A_vkt #array
+        self.province_c_w_electiricity = c_w_electiricity #array
+        self.province_c_p_electiricity = c_p_electiricity #array
+        self.province_weight = province_weight
+
+        self.province_result = pd.DataFrame()
+
+        #Excute
+        self.province_lcoc()
+
+    #Province
+    def province_lcoc(self):
+        result = pd.DataFrame([])
+        for i in range(len(self.province_shortname)):
+            self.setup_provnice_data(self.province_c_r_electiricity[i], self.province_A_vkt[i], self.province_c_w_electiricity[i])
+            new_row = pd.DataFrame([[self.province_shortname.loc[i][0], self.cal_r_weight_LCOC(), self.cal_w_LCOC(), self.cal_p_LCOC(),self.cal_combined_LCOC()]],
+                                    columns=['Province', 'Res', 'Workplace', 'Public','Combined'])
+            result = pd.concat([result, new_row], ignore_index=True)
+        self.province_result = result
+        return result
     
+    def cal_national_w_lcoc(self):
+        result = self.province_result["Combined"].to_numpy()
+        return np.dot(self.province_weight,result)
+    
+        #setup
+    def setup_provnice_data(self,c_r_electiricity,A_vkt,c_w_electiricity):
+        self.c_r_electiricity = c_r_electiricity
+        self.A_vkt = A_vkt
+        self.c_w_electiricity = c_w_electiricity
+        self.c_p_electiricity = c_w_electiricity
+
     def setup_for_sen_charging_mix(self,r_charging_mix,combined_charging_mix):
         self.r_charging_mix = r_charging_mix
         self.setup_combined_charging_mix(combined_charging_mix)
         self.province_lcoc()
         return self
-
+   
     def setup_vkt(self,vkt):
         self.province_A_vkt = vkt
         self.province_lcoc()

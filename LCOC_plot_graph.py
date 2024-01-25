@@ -1,3 +1,5 @@
+#Author: Tam Chon-Man
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -112,4 +114,112 @@ def sen_lcoc_grahp(df_base_sen):
     plt.xlabel("RMB/kWh",fontsize=27)
 
 
+def lcoc_utization_graph(df_u_c, baseline_result):
+    u_c = df_u_c['utilzation_rate']
+    lcoc_7 = df_u_c['7kw']
+    lcoc_50 = df_u_c['50kw']
+    lcoc_162 = df_u_c['163kw']
+    lcoc_350 = df_u_c['350kw']
 
+    ax1 = plt.figure(figsize=(20,15), dpi=400).add_subplot(111)
+    ax3 = ax1.twinx()
+
+    ax1.axhline(baseline_result, color='black',linewidth = 5, linestyle =':', label='Resi. L1: 1 - 3 kW')
+    ax1.plot(u_c, lcoc_7, linewidth = 4.5, color = '#FFEA20', label ='Resi. L2/Work: 7 kW', marker = 'o', markevery=10 , markersize = 10)
+    ax1.plot(u_c, lcoc_50, linewidth = 4.5, color = '#379237', label ='Public: ≤ 50 kW', marker ='o', markevery=10, markersize = 10)
+    ax1.plot(u_c, lcoc_162, linewidth = 4.5 ,color = '#82CD47', label= 'Public: 150~175 kW' , marker ='D', markevery=10, markersize = 10)
+    ax1.plot(u_c, lcoc_350, linewidth = 4.5 ,color = '#54B435', label = 'Public: ≥ 350kW', marker ='s', markevery=10, markersize = 10)
+
+
+    ax1.grid(True,axis='y',linestyle = '-.' )
+    ax1.grid(True,axis='x',linestyle = '-.' )
+
+    ax1.set_xlim(0, 0.26)
+    ax1.set_ylim(0.4, 2.6)
+    ax1.set_xticklabels(['     0%','5%','10%','15%','20%','25%'],fontsize = 28)
+
+    ax1.set_yticklabels([round(x ,2) for x in ax1.get_yticks()],fontsize = 28)
+
+    ax3.set_yticks(ax1.get_yticks())
+    ax3.set_ybound(ax1.get_ybound())
+    ax3.set_yticklabels([round(x * 11.98,1) for x in ax1.get_yticks()],fontsize = 28)
+
+    ax1.legend(fontsize='35')
+
+    plt.show()
+
+def all_utilization_graph(df_u_c,df_u_s):
+    u = df_u_s['Utilization rate']
+    u_c = df_u_c['utilzation_rate']
+    lcoc_7 = df_u_c['7kw']
+    lcoc_50 = df_u_c['50kw']
+    lcoc_162 = df_u_c['163kw']
+    lcoc_350 = df_u_c['350kw']
+
+    lcos_kwh = df_u_s['LCOB_r']
+
+    u_range = np.arange(-0.1,1.1,0.2)
+
+    ax1 = plt.figure(figsize=(25,18), dpi=400).add_subplot(111)
+    ax3 = ax1.twinx()
+
+    ax1.plot(u_c, lcoc_7, linewidth = 2.5, color = '#FFEA20', label ='Resi. L2/Work: 7 kW', marker = 'o', markevery=10 , markersize = 5)
+    ax1.plot(u_c, lcoc_50, linewidth = 2.5, color = '#379237', label ='Public: ≤ 50 kW', marker ='o', markevery=10, markersize = 5)
+    ax1.plot(u_c, lcoc_162, linewidth = 2.5 ,color = '#82CD47', label= 'Public: 150~175 kW' , marker ='D', markevery=10, markersize = 5)
+    ax1.plot(u_c, lcoc_350, linewidth = 2.5 ,color = '#54B435', label = 'Public: ≥ 350kW', marker ='s', markevery=10, markersize = 5)
+
+    ax1.plot(u, lcos_kwh, linewidth = 6 ,color = '#2D4263', label = 'LCOS')
+
+    ax1.fill_between(u_range, 5.71-1.82, 5.71+1.82, color='#B2B2B2',alpha = 0.6)
+
+    ax1.axhline(5.71, color='#3C4048', linestyle ='-.',linewidth = 3)
+    ax1.set_xlim(0, 1.05)
+    ax1.grid(True,axis='both',linestyle = '-.' )
+
+    ax1.set_xticklabels(['0%','20%','40%','60%','80%','100%'],fontsize = 25)
+    ax1.set_yticklabels(['',0.0,5.0,10.0,15.0,20.0,25.0],fontsize = 25)
+
+    ax3.set_yticks(ax1.get_yticks())
+    ax3.set_ybound(ax1.get_ybound())
+    ax3.set_yticklabels([round((x * 11.98),1) for x in ax1.get_yticks()],fontsize = 25)
+
+    ax1.yaxis.set_label_coords(-.05, 0.5)
+    ax1.set_xlabel("Utilization rate",fontsize=35)
+    ax1.set_ylabel("Levelized cost of EV recharging  (RMB/kWh)",fontsize=35)
+
+    ax3.yaxis.set_label_coords(1.06, 0.5)
+    ax3.set_ylabel("RMB/100km",fontsize =35)
+
+def plot_reduction_sensitivity(df_lcos_sen):
+    u = df_lcos_sen['Reduction']
+    case1 = df_lcos_sen['Random Charging'] 
+    case3 = df_lcos_sen['Valley Charging']
+    case1_no = df_lcos_sen['Random Charing w/o Subsidy']
+    case3_no = df_lcos_sen['Valley Charing w/o Subsidy'] 
+
+    ax1 = plt.figure(figsize=(20,12), dpi=200).add_subplot(111)
+
+    # ax2 = ax1.twiny()
+    ax3 = ax1.twinx()
+
+    # ax1.axhline(5.71, color = 'black', linewidth = 2.8, linestyle='--',alpha = 0.7,label ='8 Years Average Fuel cost')
+    ax1.plot(u, case1, linewidth = 4, color = '#5F9DF7', label ='Random Charging')
+    ax1.plot(u, case3, linewidth = 4,color = '#FB2576', label= 'Valley Charging')
+    ax1.plot(u, case1_no, linewidth = 4 ,color = 'blue', label= 'Random Charging w/o subsidy', marker = 'o' , markersize = 10 )
+    ax1.plot(u, case3_no, linewidth = 4 ,color = 'red', label= 'Valley Charging w/o subsidy',marker = 'o', markersize = 10)
+
+    ax1.grid(True,axis='both',linestyle = '-.' )
+    ax1.legend(prop={'family':'Times New Romane', 'size':20}, loc = 'lower left')
+
+    ax1.tick_params(axis='both', colors='black', labelsize=25)
+
+    ax1.set_ylabel("LCOBS  (RMB/kWh)",fontsize=25)
+    ax3.set_ylabel("RMB/100km",fontsize=25)
+    ax1.set_xlabel("Battery price reduction",fontsize=25)
+
+    ax3.set_yticks(ax1.get_yticks())
+    ax3.set_ybound(ax1.get_ybound())
+    ax3.set_yticklabels([round(x * 11.98 ,1)for x in ax1.get_yticks()])
+    ax3.tick_params(axis='both', colors='black', labelsize=25)
+
+    plt.show()

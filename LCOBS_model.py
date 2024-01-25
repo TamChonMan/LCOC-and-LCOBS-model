@@ -1,3 +1,4 @@
+#Author: Tam Chon-Man
 import numpy as np
 import pandas as pd
 
@@ -38,19 +39,17 @@ class LCOBScalculator:
         self.energy_swapped_daily = 0
         self.df_time_series = pd.DataFrame()
 
-        self.taxi_coming_timeseries_model()
-
     def cal_total_battery_cost(self):
         return self.battery_capacity*self.c_rb
 
     def cal_charging_swapping_f_cost(self):
-        return self.c_s*self.n_s+self.c_c*self.n_c+self.total_battery_csot*(self.n_r_b+self.n_t_b)*(1+1/(1+self.dr)**5)
+        return self.c_s*self.n_s+self.c_c*self.n_c+self.cal_total_battery_cost()*(self.n_r_b+self.n_t_b)*(1+1/(1+self.dr)**5)
     
     def cal_i_c_cost(self): #Investment and construction costs
-        return (self.charging_swapping_f_cost+self.ci+self.cp+self.co)*(1-self.alpha)
+        return (self.cal_charging_swapping_f_cost()+self.ci+self.cp+self.co)*(1-self.alpha)
     
     def cal_a_f_cost(self): #Annual facility maintenance expenditure
-        return (self.charging_swapping_f_cost+self.ci+self.cp)*self.r_m
+        return (self.cal_charging_swapping_f_cost()+self.ci+self.cp)*self.r_m
     
     def taxi_coming_timeseries_model(self):
         nnb = [x * 4 for x in self.nt[:-2]]+[0,0]
@@ -89,6 +88,7 @@ class LCOBScalculator:
         return self.cal_annual_operating_cost()* ((1 + self.dr) ** self.n - 1) / (self.dr * (1 + self.dr) ** self.n)
 
     def cal_LCOBS(self):
+        self.taxi_coming_timeseries_model()
         return (self.cal_i_c_cost()+self.cal_lifetime_operating_cost())/(self.energy_swapped_daily * 365 * ((1 + self.dr) ** self.n - 1) / (self.dr * (1 + self.dr) ** self.n))
 
     def describe(self):
@@ -104,3 +104,43 @@ class LCOBScalculator:
         }
         df = pd.DataFrame(data)
         print(df.transpose())
+
+    #setup_function
+    def set_up_nt(self,nt):
+        self.nt = nt
+        return self
+    
+    def set_up_battery_price(self,price):
+        self.c_rb = price
+        self.cal_total_battery_cost()
+        return self
+    
+    def set_up_alpha(self,alpha):
+        self.alpha = alpha  
+        return self
+
+def quene_taxi_coming_model(max_serve,no_daily_taxi,probabiliy_nt):
+    nt = [0] * 24
+
+    quene_taxi = 0
+
+    for i, weight in enumerate(probabiliy_nt):
+        hourly_coming = weight * no_daily_taxi
+        if hourly_coming + quene_taxi > max_serve:
+            nt[i] = max_serve
+            quene_taxi = hourly_coming + quene_taxi - max_serve
+        else:
+            nt[i] = hourly_coming + quene_taxi
+            quene_taxi = 0
+
+    for i , t in enumerate(nt):
+        if t + quene_taxi > max_serve:
+            nt[i] = max_serve
+            quene_taxi = t + quene_taxi - max_serve
+        else:
+            nt[i] = t + quene_taxi
+            quene_taxi = 0
+    
+    return nt
+    
+
