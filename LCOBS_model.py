@@ -81,10 +81,10 @@ class LCOBScalculator:
         self.energy_swapped_daily = sum(energy_swapped)
         self.c_daily_e = sum(ce)
 
-    def cal_annual_operating_cost(self):
+    def cal_annual_operating_cost(self): #include labor
         return self.cal_a_f_cost()+self.c_h*self.n_h+self.c_daily_e * 365 
     
-    def cal_lifetime_operating_cost(self):
+    def cal_lifetime_operating_cost(self): #All maintenance cost & electiricity 
         return self.cal_annual_operating_cost()* ((1 + self.dr) ** self.n - 1) / (self.dr * (1 + self.dr) ** self.n)
 
     def cal_LCOBS(self):
@@ -97,6 +97,7 @@ class LCOBScalculator:
             "Investment and construction costs": [self.cal_i_c_cost()],
             "Annual facility maintenance expenditure": [self.cal_a_f_cost()],
             "Annual labor wages": [self.c_h * self.n_h],
+            "Annual electricity cost": [self.c_daily_e * 365],
             "lifetime operation cost": [self.cal_lifetime_operating_cost()],
             "lifetime electiricty cost": [self.c_daily_e * 365 * ((1 + self.dr) ** self.n - 1) / (self.dr * (1 + self.dr) ** self.n)],
             "lifetime maintenance and labor cost": [self.cal_lifetime_operating_cost() - self.c_daily_e * 365 * ((1 + self.dr) ** self.n - 1) / (self.dr * (1 + self.dr) ** self.n)],
@@ -118,6 +119,15 @@ class LCOBScalculator:
     def set_up_alpha(self,alpha):
         self.alpha = alpha  
         return self
+    
+    def cal_levelized_om(self): #without electiricty 
+        return (self.cal_lifetime_operating_cost() - self.c_daily_e * 365 * ((1 + self.dr) ** self.n - 1) / (self.dr * (1 + self.dr) ** self.n))/(self.energy_swapped_daily * 365 * ((1 + self.dr) ** self.n - 1) / (self.dr * (1 + self.dr) ** self.n))
+
+    def cal_levelized_e(self):
+        return (self.c_daily_e * 365 * ((1 + self.dr) ** self.n - 1) / (self.dr * (1 + self.dr) ** self.n))/ (self.energy_swapped_daily * 365 * ((1 + self.dr) ** self.n - 1) / (self.dr * (1 + self.dr) ** self.n))
+
+    def cal_levelized_c(self):
+        return self.cal_i_c_cost()/(self.energy_swapped_daily * 365 * ((1 + self.dr) ** self.n - 1) / (self.dr * (1 + self.dr) ** self.n))
 
 def quene_taxi_coming_model(max_serve,no_daily_taxi,probabiliy_nt):
     nt = [0] * 24
@@ -141,6 +151,7 @@ def quene_taxi_coming_model(max_serve,no_daily_taxi,probabiliy_nt):
             nt[i] = t + quene_taxi
             quene_taxi = 0
     
+    print(nt)
     return nt
     
 
